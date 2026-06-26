@@ -17,6 +17,11 @@ public class ContaPoupanca extends Conta {
         this.aniversario = aniversario;
     }
 
+    public void calcularNovoSaldo(float taxaPercentual) {
+        float rendimento = this.getSaldo() * (taxaPercentual / 100);
+        this.setSaldo(this.getSaldo() + rendimento);
+    }
+
     @Override
     public void visualizar() {
         super.visualizar();
