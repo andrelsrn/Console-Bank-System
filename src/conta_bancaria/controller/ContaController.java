@@ -6,6 +6,7 @@ import conta_bancaria.repository.ContaRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ContaController implements ContaRepository {
 
@@ -58,16 +59,63 @@ public class ContaController implements ContaRepository {
 
     @Override
     public void sacar(int numero, float valor) {
+        Optional<Conta> conta = buscarNaCollection(numero);
+
+        if (conta.isPresent()) {
+            if (conta.get().sacar(valor))
+                System.out.printf("\nO saque no valor de R$ %.2f, na conta número %d foi efetuado com sucesso!"
+                        , valor, numero);
+            else
+                System.out.printf("\nO saque no valor de R$ %.2f, na conta número %d não foi efetuado devido ao saldo insuficiente!"
+                        , valor, numero);
+        } else
+            System.out.printf("\nA conta número %d não foi encontrada!", numero);
 
     }
 
     @Override
     public void depositar(int numero, float valor) {
+        Optional<Conta> conta = buscarNaCollection(numero);
 
+        if (conta.isPresent()) {
+            conta.get().depositar(valor);
+            System.out.printf("\nO depósito no valor de R$ %.2f, na conta número %d foi efetuado com sucesso!"
+                    , valor, numero);
+        }else
+            System.out.printf("\nA conta número %d não foi encontrada!", numero);
     }
 
     @Override
     public void transferir(int numeroOrigem, int numeroDestino, float valor) {
+        Optional<Conta> contaOrigem = buscarNaCollection(numeroOrigem);
+        Optional<Conta> contaDestino = buscarNaCollection(numeroDestino);
+
+        if (contaOrigem.isPresent() && contaDestino.isPresent()) {
+            if (contaOrigem.get().sacar(valor)) {
+                contaDestino.get().depositar(valor);
+                System.out.printf("\nA transferência no valor de R$ %.2f, da conta número %d "
+                                + " para a conta %d foi efetuado com sucesso!"
+                        , valor, numeroOrigem, numeroDestino);
+            } else
+                System.out.printf("\nA transferência no valor de R$ %.2f, da conta número %d "
+                                + "para a conta %d não foi efetuado devido ao saldo insuficiente na conta de origem!"
+                        , valor, numeroOrigem, numeroDestino);
+        } else
+            System.out.printf("\nA conta número %d e/ou a conta número %d não foram encontradas!"
+                    , numeroOrigem, numeroDestino);
+    }
+
+
+    public void listarPorTitular(String titular) {
+
+        List<Conta> listaTitulares = listaContas.stream()
+                .filter(conta -> conta.getTitular().toUpperCase().contains(titular.toUpperCase()))
+                .collect(Collectors.toList());
+
+        if (listaTitulares.isEmpty())
+            System.out.printf("\nNenhum titular com o nome %s foi encontrado.", titular);
+        else
+            listaTitulares.forEach(conta -> conta.visualizar());
 
     }
 
